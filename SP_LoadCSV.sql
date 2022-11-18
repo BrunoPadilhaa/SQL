@@ -19,22 +19,22 @@ BEGIN
 		DROP TABLE IF EXISTS ##TMP_HR
 		
 		CREATE TABLE ##TMP_HR (
-			EmpID						VARCHAR(1000)
+			EmpID					VARCHAR(1000)
 		,	EmployeeName				VARCHAR(1000)
-		,	Sex							VARCHAR(1000)
-		,	HireDate					VARCHAR(1000)
-		,	PositionID					VARCHAR(1000)
+		,	Sex					VARCHAR(1000)
+		,	HireDate				VARCHAR(1000)
+		,	PositionID				VARCHAR(1000)
 		,	PositionDesc				VARCHAR(1000)
 		,	DepartmentDesc				VARCHAR(1000)
-		,	ShiftDesc					VARCHAR(1000)
+		,	ShiftDesc				VARCHAR(1000)
 		,	ContractTypeDesc			VARCHAR(1000)
 		,	MaritalStatusDesc			VARCHAR(1000)
-		,	BirthDate					VARCHAR(1000)
+		,	BirthDate				VARCHAR(1000)
 		,	CitizenshipDesc				VARCHAR(1000)
-		,	RaceDesc					VARCHAR(1000)
-		,	Salary						VARCHAR(1000)
+		,	RaceDesc				VARCHAR(1000)
+		,	Salary					VARCHAR(1000)
 		,	TerminationDate				VARCHAR(1000)
-		,	SituationID					VARCHAR(1000)
+		,	SituationID				VARCHAR(1000)
 		,	SituationDesc				VARCHAR(1000)
 		,	TerminationReason			VARCHAR(1000)
 
@@ -438,12 +438,12 @@ END
 
 	
 		CREATE TABLE fact_Employee (
-			EmpID				INT IDENTITY(1,1) NOT NULL
-		,	[Name]				VARCHAR(50)
-		,	Sex					CHAR(1)
-		,	BirthDate			DATE
-		,	Age					AS ( FLOOR( DATEDIFF( DAY, CONVERT(DATE,BirthDate,103), GETDATE() ) / 365.25 ) )
-		,	AgeGroup			AS ( CASE WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 15 AND 19 THEN '15-19' 
+			EmpID			INT IDENTITY(1,1) NOT NULL
+		,	[Name]			VARCHAR(50)
+		,	Sex			CHAR(1)
+		,	BirthDate		DATE
+		,	Age			AS ( FLOOR( DATEDIFF( DAY, CONVERT(DATE,BirthDate,103), GETDATE() ) / 365.25 ) )
+		,	AgeGroup		AS ( CASE WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 15 AND 19 THEN '15-19' 
 										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 20 AND 29 THEN '20-29' 
 										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 30 AND 39 THEN '30-39'
 										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 40 AND 49 THEN '40-49'
@@ -454,16 +454,16 @@ END
 										  ELSE 'Not Informed'
 									END ) 
 		,	MaritalStatusID		SMALLINT	NOT NULL REFERENCES dim_MaritalStatus	(MaritalStatusID)
-		,	PositionID			SMALLINT	NOT NULL REFERENCES dim_Position		(PositionID)
+		,	PositionID		SMALLINT	NOT NULL REFERENCES dim_Position		(PositionID)
 		,	DepartmentID		SMALLINT	NOT NULL REFERENCES dim_Department		(DepartmentID)
-		,	ShiftID				SMALLINT	NOT NULL REFERENCES dim_Shift			(ShiftID)
+		,	ShiftID			SMALLINT	NOT NULL REFERENCES dim_Shift			(ShiftID)
 		,	CitizenshipID		SMALLINT	NOT NULL REFERENCES	dim_Citizenship		(CitizenshipID)
 		,	ContractTypeID		SMALLINT	NOT NULL REFERENCES dim_ContractType	(ContractTypeID)
-		,	RaceID				SMALLINT	NOT NULL REFERENCES dim_Race			(RaceID)
-		,	Salary				FLOAT	
-		,	HireDate			DATE
+		,	RaceID			SMALLINT	NOT NULL REFERENCES dim_Race			(RaceID)
+		,	Salary			FLOAT	
+		,	HireDate		DATE
 		,	TerminationDate		DATE
-		,	SituationID			SMALLINT	NOT NULL REFERENCES dim_Situation		(SituationID)
+		,	SituationID		SMALLINT	NOT NULL REFERENCES dim_Situation		(SituationID)
 		,	TerminationReason	VARCHAR(1000)
 		,	RetentionDays		SMALLINT
 		,	RetentionDaysGroup	AS (
