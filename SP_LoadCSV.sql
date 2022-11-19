@@ -1,40 +1,39 @@
-USE HumanResources
-
+USE [HumanResources]
 GO
-
-/****** Object:  StoredProcedure [dbo].[SP_EXTRATO_NEGOCIACAO]    Script Date: 19/10/2022 14:15:57 ******/
+/****** Object:  StoredProcedure [dbo].[SP_LoadCSV]    Script Date: 18/11/2022 20:19:29 ******/
 SET ANSI_NULLS ON
 GO
-
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE OR ALTER  PROCEDURE [dbo].[SP_LoadCSV]
+ALTER PROCEDURE [dbo].[SP_LoadCSV]
 
 AS
+
+SET NOCOUNT ON
 
 BEGIN
 
 		-- CREATE TEMP TABLE TO STORE DATA FROM CSV FILE
 		DROP TABLE IF EXISTS ##TMP_HR
 		
-		CREATE TABLE ##TMP_HR (
-			EmpID					VARCHAR(1000)
+		CREATE TABLE ##TMP_HR (	
+			EmpID						VARCHAR(1000)
 		,	EmployeeName				VARCHAR(1000)
-		,	Sex					VARCHAR(1000)
-		,	HireDate				VARCHAR(1000)
-		,	PositionID				VARCHAR(1000)
+		,	Sex							VARCHAR(1000)
+		,	HireDate					VARCHAR(1000)
+		,	PositionID					VARCHAR(1000)
 		,	PositionDesc				VARCHAR(1000)
 		,	DepartmentDesc				VARCHAR(1000)
-		,	ShiftDesc				VARCHAR(1000)
+		,	ShiftDesc					VARCHAR(1000)
 		,	ContractTypeDesc			VARCHAR(1000)
 		,	MaritalStatusDesc			VARCHAR(1000)
-		,	BirthDate				VARCHAR(1000)
+		,	BirthDate					VARCHAR(1000)
 		,	CitizenshipDesc				VARCHAR(1000)
-		,	RaceDesc				VARCHAR(1000)
-		,	Salary					VARCHAR(1000)
+		,	RaceDesc					VARCHAR(1000)
+		,	Salary						VARCHAR(1000)
 		,	TerminationDate				VARCHAR(1000)
-		,	SituationID				VARCHAR(1000)
+		,	SituationID					VARCHAR(1000)
 		,	SituationDesc				VARCHAR(1000)
 		,	TerminationReason			VARCHAR(1000)
 
@@ -433,75 +432,175 @@ END
 ------------------------------------------------------------------------
 --	CREATE FACT_EMPLOYEE
 ------------------------------------------------------------------------
+BEGIN
 
 	IF OBJECT_ID('HumanResources..fact_Employee') IS NULL
 
 	
-		CREATE TABLE fact_Employee (
-			EmpID			INT IDENTITY(1,1) NOT NULL
-		,	[Name]			VARCHAR(50)
-		,	Sex			CHAR(1)
-		,	BirthDate		DATE
-		,	Age			AS ( FLOOR( DATEDIFF( DAY, CONVERT(DATE,BirthDate,103), GETDATE() ) / 365.25 ) )
-		,	AgeGroup		AS ( CASE WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 15 AND 19 THEN '15-19' 
-										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 20 AND 29 THEN '20-29' 
-										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 30 AND 39 THEN '30-39'
-										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 40 AND 49 THEN '40-49'
-										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 50 AND 59 THEN '50-59'
-										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 60 AND 69 THEN '60-69'
-										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 70 AND 79 THEN '70-79'
-										  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) )>= 80 THEN '>80'
-										  ELSE 'Not Informed'
-									END ) 
-		,	MaritalStatusID		SMALLINT	NOT NULL REFERENCES dim_MaritalStatus	(MaritalStatusID)
-		,	PositionID		SMALLINT	NOT NULL REFERENCES dim_Position		(PositionID)
-		,	DepartmentID		SMALLINT	NOT NULL REFERENCES dim_Department		(DepartmentID)
-		,	ShiftID			SMALLINT	NOT NULL REFERENCES dim_Shift			(ShiftID)
-		,	CitizenshipID		SMALLINT	NOT NULL REFERENCES	dim_Citizenship		(CitizenshipID)
-		,	ContractTypeID		SMALLINT	NOT NULL REFERENCES dim_ContractType	(ContractTypeID)
-		,	RaceID			SMALLINT	NOT NULL REFERENCES dim_Race			(RaceID)
-		,	Salary			FLOAT	
-		,	HireDate		DATE
-		,	TerminationDate		DATE
-		,	SituationID		SMALLINT	NOT NULL REFERENCES dim_Situation		(SituationID)
-		,	TerminationReason	VARCHAR(1000)
-		,	RetentionDays		SMALLINT
-		,	RetentionDaysGroup	AS (
-									CASE WHEN RetentionDays < 60               THEN 'Less than 60 days'
-										 WHEN RetentionDays BETWEEN 60 AND 365 THEN 'Between 60 and 365 days'
-										 WHEN RetentionDays > 365              THEN 'Greater than 365 days'
-									END )
+	CREATE TABLE fact_Employee (
+		EmpID				INT  NOT NULL
+	,	[Name]				VARCHAR(50)
+	,	Sex					CHAR(1)
+	,	BirthDate			DATE
+	,	Age					AS ( FLOOR( DATEDIFF( DAY, CONVERT(DATE,BirthDate,103), GETDATE() ) / 365.25 ) )
+	,	AgeGroup			AS ( CASE WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 15 AND 19 THEN '15-19' 
+									  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 20 AND 29 THEN '20-29' 
+									  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 30 AND 39 THEN '30-39'
+									  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 40 AND 49 THEN '40-49'
+									  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 50 AND 59 THEN '50-59'
+									  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 60 AND 69 THEN '60-69'
+									  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) ) BETWEEN 70 AND 79 THEN '70-79'
+									  WHEN ( FLOOR( DATEDIFF( DAY, BirthDate, GETDATE() ) / 365.25 ) )>= 80 THEN '>80'
+									  ELSE 'Not Informed'
+								END ) 
+	,	MaritalStatusID		SMALLINT	NOT NULL REFERENCES dim_MaritalStatus	(MaritalStatusID)
+	,	PositionID			SMALLINT	NOT NULL REFERENCES dim_Position		(PositionID)
+	,	DepartmentID		SMALLINT	NOT NULL REFERENCES dim_Department		(DepartmentID)
+	,	ShiftID				SMALLINT	NOT NULL REFERENCES dim_Shift			(ShiftID)
+	,	CitizenshipID		SMALLINT	NOT NULL REFERENCES	dim_Citizenship		(CitizenshipID)
+	,	ContractTypeID		SMALLINT	NOT NULL REFERENCES dim_ContractType	(ContractTypeID)
+	,	RaceID				SMALLINT	NOT NULL REFERENCES dim_Race			(RaceID)
+	,	Salary				FLOAT	
+	,	HireDate			DATE
+	,	TerminationDate		DATE
+	,	SituationID			SMALLINT	NOT NULL REFERENCES dim_Situation		(SituationID)
+	,	TerminationReason	VARCHAR(1000)
+	,	RetentionDays		INT
+	,	RetentionDaysGroup	AS (
+								CASE WHEN TerminationDate = '01/01/1900'   THEN 'Still Employeed'
+									 WHEN RetentionDays < 60               THEN 'Less than 60 days'
+									 WHEN RetentionDays BETWEEN 60 AND 365 THEN 'Between 60 and 365 days'
+									 WHEN RetentionDays > 365              THEN 'Greater than 365 days'
+								END )
 
-		,	BadHiring AS ( CASE WHEN RetentionDays < 60 AND SituationID = 4 --Fired
-	                          THEN 1
-							  ELSE 0
-						 END )
-		)
+	,	BadHiring			AS ( 
+								CASE WHEN RetentionDays < 60 AND SituationID = 4 --Fired
+									 THEN 1
+								ELSE 0
+								END )
+	)
 
-
-
-
-
-	
+END
 
 
+-- LOADS THE DATA INTO THE FACT_EMPLOYEE
+--------------------------------------------
+
+	MERGE fact_Employee TRG
+	USING (
+		SELECT 
+			TMPH.EmpID				
+		,	TMPH.EmployeeName				
+		,	TMPH.Sex					
+		,	CONVERT(DATE,TMPH.BirthDate, 103)												AS BirthDate	
+		,	MAST.MaritalStatusID		
+		,	POSI.PositionID			
+		,	DEPT.DepartmentID		
+		,	SHIF.ShiftID				
+		,	CITI.CitizenshipID		
+		,	COTY.ContractTypeID		
+		,	RACE.RaceID				
+		,	REPLACE(REPLACE(Salary, ' ',''),',','.')										AS Salary				
+		,	CONVERT(DATE,HireDate, 103)														AS HireDate		
+		,	CONVERT(DATE,TerminationDate, 103)												AS TerminationDate		
+		,	SituationID			
+		,	TerminationReason
+		,   DATEDIFF(DAY, CONVERT(DATE,HireDate,103), CONVERT(DATE,TerminationDate, 103))	AS	RetentionDays	
+		FROM ##TMP_HR TMPH
+
+		LEFT
+		JOIN dim_MaritalStatus MAST
+		ON	 MAST.MaritalStatusDesc = TMPH.MaritalStatusDesc
+
+		LEFT
+		JOIN dim_Position POSI
+		ON	 POSI.PositionDesc = TMPH.PositionDesc
+
+		LEFT
+		JOIN dim_Department DEPT
+		ON	 DEPT.DepartmentDesc = TMPH.DepartmentDesc
+
+		LEFT
+		JOIN dim_Shift SHIF
+		ON   SHIF.ShiftDesc = TMPH.ShiftDesc
+
+		LEFT 
+		JOIN dim_Citizenship CITI
+		ON   CITI.CitizenshipDesc = TMPH.CitizenshipDesc
+
+		LEFT
+		JOIN dim_ContractType COTY
+		ON	 COTY.ContractTypeDesc = TMPH.ContractTypeDesc
+
+		LEFT
+		JOIN dim_Race RACE
+		ON	 RACE.RaceDesc = TMPH.RaceDesc
+
+	) SRC
+
+	ON TRG.EmpID = SRC.EmpID
+
+WHEN MATCHED THEN
+	UPDATE SET   EmpID				   =   SRC.EmpID   
+				,[Name]				   =   SRC.EmployeeName
+				,Sex				   =   SRC.Sex
+				,BirthDate		       =   SRC.BirthDate
+				,MaritalStatusID	   =   SRC.MaritalStatusID
+				,PositionID		       =   SRC.PositionID
+				,DepartmentID		   =   SRC.DepartmentID
+				,ShiftID			   =   SRC.ShiftID
+				,CitizenshipID		   =   SRC.CitizenshipID
+				,ContractTypeID		   =   SRC.ContractTypeID
+				,RaceID				   =   SRC.RaceID
+				,Salary				   =   SRC.Salary
+				,HireDate			   =   SRC.HireDate
+				,TerminationDate	   =   SRC.TerminationDate
+				,SituationID		   =   SRC.SituationID
+				,TerminationReason     =   SRC.TerminationReason
+				,RetentionDays	       =   SRC.RetentionDays
+
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT (
+	 EmpID				  
+	,[Name]				  
+	,Sex				  
+	,BirthDate		      
+	,MaritalStatusID	  
+	,PositionID		      
+	,DepartmentID		  
+	,ShiftID			  
+	,CitizenshipID		  
+	,ContractTypeID		  
+	,RaceID				  
+	,Salary				  
+	,HireDate			  
+	,TerminationDate	  
+	,SituationID		  
+	,TerminationReason    
+	,RetentionDays
+	)
+	VALUES (
+	 SRC.EmpID   
+	,SRC.EmployeeName
+	,SRC.Sex
+	,SRC.BirthDate
+	,SRC.MaritalStatusID
+	,SRC.PositionID
+	,SRC.DepartmentID
+	,SRC.ShiftID
+	,SRC.CitizenshipID
+	,SRC.ContractTypeID
+	,SRC.RaceID
+	,SRC.Salary
+	,SRC.HireDate
+	,SRC.TerminationDate
+	,SRC.SituationID
+	,SRC.TerminationReason
+	,SRC.RetentionDays
+	)
+
+WHEN NOT MATCHED BY SOURCE THEN
+	DELETE;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			
